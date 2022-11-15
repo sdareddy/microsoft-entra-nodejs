@@ -1,0 +1,13 @@
+{
+    "azTenantId": "a059b1ee-8300-4992-b11b-57b48b804f11",
+    "azClientId": "348d30d3-3246-47ea-bec3-b95cbb36c8f7",
+    "azClientSecret": "",
+    "azCertificateName":  "",
+    "azCertThumbprint":  "",
+    "azCertificatePrivateKeyLocation":  "",
+    "CredentialManifest": "https://verifiedid.did.msidentity.com/v1.0/tenants/a059b1ee-8300-4992-b11b-57b48b804f11/verifiableCredentials/contracts/YTA1OWIxZWUtODMwMC00OTkyLWIxMWItNTdiNDhiODA0ZjExZGIgbWl0YXJiZWl0ZXIgYXVzd2Vpcw/manifest",   
+    "IssuerAuthority": "did:web:stordbverifiableidtst.z6.web.core.windows.net",
+    "VerifierAuthority": "did:web:stordbverifiableidtst.z6.web.core.windows.net"
+}
+
+

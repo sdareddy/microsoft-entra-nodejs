@@ -1,92 +1,221 @@
-# Microsoft Entra Demo Node
+# Microsoft Entra Verified ID Samples
+
+This repo contains a set of Microsoft Entra Verified ID samples (former Azure AD Verifiable Credentials)
+
+## Samples
+| Sample | Description |
+|------|--------|
+| 1-node-api-idtokenhint | Node sample for using the VC Request API to issue and verify verifiable credentials with a credential contract which allows the VC Request API to pass in a payload for the Verifiable Credentials|
 
 
 
-## Getting started
+Microsoft provides a simple to use REST API to issue and verify verifiable credentials. You can use the programming language you prefer to the REST API. Instead of needing to understand the different protocols and encryption algoritms for Verifiable Credentials and DIDs you only need to understand how to format a JSON structure as parameter for the VC Request API.
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+![API Overview](ReadmeFiles/SampleArchitectureOverview.svg)
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+## Issuance
 
-## Add your files
+### Issuance JSON structure
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+To call the VC Client API to start the issuance process, the VC Request API needs a JSON structure payload like below. 
 
+```JSON
+{
+  "authority": "did:ion: ...of the Issuer",
+  "includeQRCode": true,
+  "registration": {
+    "clientName": "the verifier's client name"
+  },
+  "callback": {
+    "url": "https://contoso.com/api/issuer/issuanceCallback",
+    "state": "you pass your state here to correlate it when you get the callback",
+    "headers": {
+      "api-key": "API key to help protect your callback API"
+    }
+  },
+  "type": "your credentialType",
+  "manifest": "https://verifiedid.did.msidentity.com/v1.0/3c32ed40-8a10-465b-8ba4-0b1e86882668/verifiableCredential/contracts/VerifiedCredentialExpert",
+  "pin": {
+    "value": "012345",
+    "length": 6
+  },
+  "claims": {
+    "firstName": "Megan",
+    "lastName": "Bowen"
+  }
+}
 ```
-cd existing_repo
-git remote add origin https://git.tech.rz.db.de/bcprojects/blocx/microsoft-entra-demo-node.git
-git branch -M main
-git push -uf origin main
+
+- **authority** - is the DID identifier for your registered Verifiable Credential from portal.azure.com.
+- **includeQRCode** - If you want the VC Client API to return a `data:image/png;base64` string of the QR code to present in the browser. If you select `false`, you must create the QR code yourself (which is not difficult).
+- **registration.clientName** - name of your app which will be shown in the Microsoft Authenticator
+- **callback.url** - a callback endpoint in your application. The VC Request API will call this endpoint when the issuance is completed.
+- **callback.state** - A state value you provide so you can correlate this request when you get callback confirmation
+- **callback.headers** - Any HTTP Header values that you would like the VC Request API to pass back in the callbacks. Here you could set your own API key, for instance
+- **type** - the name of your credentialType. This value is configured in the rules file.
+- **manifest** - url of your manifest for your VC. This comes from your defined Verifiable Credential in portal.azure.com
+- **pin** - If you want to require a pin code in the Microsoft Authenticator for this issuance request. This can be useful if it is a self issuing situation where there is no possibility of asking the user to prove their identity via a login. If you don't want to use the pin functionality, you should not have the pin section in the JSON structure. 
+- **claims** - optional, extra claims you want to include in the VC.
+
+In the response message from the VC Request API, it will include a URL to the request which is hosted at the Microsoft VC request service, which means that once the Microsoft Authenticator has scanned the QR code, it will contact the VC Request service directly and not your application directly. Your application will get a callback from the VC Request service via the callback.
+
+```json
+{
+    "requestId": "799f23ea-524a-45af-99ad-cf8e5018814e",
+    "url": "openid://vc?request_uri=https://verifiedid.did.msidentity.com/v1.0/abc/verifiablecredentials/request/178319f7-20be-4945-80fb-7d52d47ae82e",
+    "expiry": 1622227690,
+    "qrCode": "data:image/png;base64,iVBORw0KGgoA<SNIP>"
+}
 ```
 
-## Integrate with your tools
+### Issuance Callback
 
-- [ ] [Set up project integrations](https://git.tech.rz.db.de/bcprojects/blocx/microsoft-entra-demo-node/-/settings/integrations)
+In your callback endpoint, you will get a callback with the below message when the QR code is scanned. This callback is typically used to modify the UI, hide the QR code to prevent scanning again and show the pincode to use when the user wants to accept the Verifiable Credential.
 
-## Collaborate with your team
+```JSON
+{
+  "requestStatus":"request_retrieved",
+  "requestId":"9463da82-e397-45b6-a7a2-2c4223b9fdd0",
+  "state": "...what you passed as the state value..."
+}
+```
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+Once the VC is issued, you get a second callback which contains information if the issuance of the verifiable credential to the user was succesful or not.
 
-## Test and Deploy
+This callback is typically used to notify the user on the issuance website the process is completed and continue with whatever the website needs or wants the user to do.
 
-Use the built-in continuous integration in GitLab.
+### Successful Issuance flow response
+```JSON
+{
+  "requestStatus":"issuance_successful",
+  "requestId":"9463da82-e397-45b6-a7a2-2c4223b9fdd0",
+  "state": "...what you passed as the state value..."
+}
+```
+### Unuccesful Issuance flow response
+```JSON
+{
+  "requestStatus":"issuance_failed",
+  "requestId":"9463da82-e397-45b6-a7a2-2c4223b9fdd0", 
+  "state": "...what you passed as the state value...",
+  "error": {
+      "code":"IssuanceFlowFailed",
+      "message":"issuance_service_error",
+    }
+}
+```
+When the issuance fails this can be caused by several reasons. The following details are currently provided in the error part of the response:
+| Message | Definition |
+|---|---|
+| fetch_contract_error | The user has canceled the flow |
+| issuance_service_error | VC Issuance service was not able to validate requirements / something went wrong on Microsoft AAD VC Issuance service side. |
+| unspecified_error | Something went wrong that doesn’t fall into this bucket |
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
 
-***
+## Verification
 
-# Editing this README
+### Verification JSON structure
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
+To call the VC Request API to start the verification process, the application creates a JSON structure like below. Since the WebApp asks the user to present a VC, the request is also called `presentation request`.
 
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+```JSON
+{
+  "authority": "did:ion: did-of-the-Verifier",
+  "includeQRCode": true,
+  "registration": {
+    "clientName": "the verifier's client name",
+    "purpose": "the purpose why the verifier asks for a VC"
+  },
+  "callback": {
+    "url": "https://contoso.com/api/verifier/presentationCallback",
+    "state": "you pass your state here to correlate it when you get the callback",
+    "headers": {
+      "api-key": "API key to help protect your callback API"
+    }
+  },
+  "includeReceipt": false,
+  "requestedCredentials": [
+    {
+      "type": "your credentialType",
+      "purpose": "the purpose why the verifier asks for a VC",
+      "acceptedIssuers": [ "did:ion: ...of the Issuer" ],
+      "configuration": {
+        "validation": {
+          "allowRevoked": true,
+          "validateLinkedDomain": true
+        }
+      }  
+    }
+  ]
+}
+```
 
-## Name
-Choose a self-explaining name for your project.
+Much of the data is the same in this JSON structure, but some differences needs explaining.
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+- **authority** vs **acceptedIssuers** - The Verifier and the Issuer may be two different entities. For example, the Verifier might be a online service, like a car rental service, while the DID it is asking for is the issuing entity for drivers licenses. Note that `acceptedIssuers` is a collection of DIDs, which means you can ask for multiple VCs from the user coming from different trusted issuers.
+- **requestedCredentials** - please also note that the `requestedCredentials` is a collection too, which means you can ask to create a presentation request that contains multiple DIDs.
+- **includeReceipt** - if set to true, the `presentation_verified` callback will contain the `receipt` element.
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+### Verification Callback
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+In your callback endpoint, you will get a callback with the below message when the QR code is scanned.
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+When the QR code is scanned, you get a short callback like this.
+```JSON
+{
+  "requestStatus":"request_retrieved",
+  "requestId":"c18d8035-3fc8-4c27-a5db-9801e6232569", 
+  "state": "...what you passed as the state value..."
+}
+```
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+Once the VC is verified, you get a second, more complete, callback which contains all the details on what whas presented by the user.
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+```JSON
+{
+    "requestStatus":"presentation_verified",
+    "requestId":"c18d8035-3fc8-4c27-a5db-9801e6232569",
+    "state": "...what you passed as the state value...",
+    "subject": "did:ion: ... of the VC holder...",
+    "issuers": [
+      {
+        "issuer": "did:ion of the issuer of this verifiable credential ",
+        "type": [ "VerifiableCredential", "your credentialType" ],
+        "claims": {
+            "lastName":"Bowen",
+            "firstName":"Megan" 
+        },
+        "credentialState": {
+          "revocationStatus": "VALID"
+        },
+        "domainValidation": {
+          "url": "https://did.woodgrovedemo.com"
+        }
+      }
+    ],
+    "receipt":{
+        "id_token": "...JWT Token of VC...",
+        "vp_token": "...JWT Token of VP..."
+        }
+    }
+}
+```
+Some notable attributes in the message:
+- **claims** - parsed claims from the VC
+- **credentialState.revocationStatus** - indicates the current revocation status at the time of the presentaion 
+- **domainValidation** - If you asked for domain validation via passing `validateLinkedDomain` **true** in the request, you will get the validated domain name in the response.
+- **receipt.id_token** - The JWT token of the presentation response
+- **receipt.vp_token** - The JWT token of the credential in the presentation response. In the token, the `vp.verifiableCredential` contains the VCs for the presented credentials.
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+## Setup
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+Before you can run any of these samples make sure your environment is setup correctly. You can follow the setup instructions [here](https://aka.ms/vcsetup)
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+## Resources
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+For more information, see MSAL.NET's conceptual documentation:
 
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+- [Quickstart: Register an application with the Microsoft identity platform](https://docs.microsoft.com/azure/active-directory/develop/quickstart-register-app)
+- [Quickstart: Configure a client application to access web APIs](https://docs.microsoft.com/azure/active-directory/develop/quickstart-configure-app-access-web-apis)
+- [Acquiring a token for an application with client credential flows](https://aka.ms/msal-net-client-credentials)
