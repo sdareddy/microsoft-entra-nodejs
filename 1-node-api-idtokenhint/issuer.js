@@ -106,12 +106,12 @@ mainApp.app.get('/api/issuer/issuance-request', async (req, res) => {
     issuanceConfig.pin.value = generatePin( issuanceConfig.pin.length );
   }
   // here you could change the payload manifest and change the firstname and lastname
-  if ( issuanceConfig.claims ) {
+  /*if ( issuanceConfig.claims ) {
     issuanceConfig.claims.vorname = "Megan";
     issuanceConfig.claims.nachname = "Bowen";
     issuanceConfig.claims.zugangsgruppe = "FZI";
     issuanceConfig.claims.qualifikation = "Gute Mitarbeiterin";
-  }
+  }*/
 
   console.log( 'VC Client API Request' );
   var client_api_request_endpoint = `${mainApp.config.msIdentityHostName}verifiableCredentials/createIssuanceRequest`;

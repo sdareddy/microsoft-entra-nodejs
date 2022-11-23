@@ -43,6 +43,8 @@ if ( presentationConfig.callback.headers ) {
   presentationConfig.callback.headers['api-key'] = apiKey;
 }
 
+let participants = [];
+
 function requestTrace( req ) {
   var dateFormatted = new Date().toISOString().replace("T", " ");
   var h1 = '//****************************************************************************';
@@ -157,15 +159,23 @@ mainApp.app.post('/api/verifier/presentation-request-callback', parser, async (r
     // In this case the result is put in the in memory cache which is used by the UI when polling for the state so the UI can be updated.
     if ( presentationResponse.requestStatus == "presentation_verified" ) {
       mainApp.sessionStore.get(presentationResponse.state, (error, session) => {
+        let firstName = presentationResponse.verifiedCredentialsData[0].claims.vorname
+        let lastName = presentationResponse.verifiedCredentialsData[0].claims.nachname
+        let org = presentationResponse.verifiedCredentialsData[0].claims.firma
         var cacheData = {
             "status": presentationResponse.requestStatus,
             "message": "Presentation received",
             "payload": presentationResponse.verifiedCredentialsData,
             "subject": presentationResponse.subject,
-            "firstName": presentationResponse.verifiedCredentialsData[0].claims.firstName,
-            "lastName": presentationResponse.verifiedCredentialsData[0].claims.lastName,
+            "firstName": firstName,
+            "lastName": lastName,
+            "organisation": org,
             "presentationResponse": presentationResponse
         };
+        participants.push({firstName, lastName, org});
+        console.log({firstName, lastName, org});
+        console.table(participants);
+        console.log(JSON.stringify(participants, null, 4));
         session.sessionData = cacheData;
         mainApp.sessionStore.set( presentationResponse.state, session, (error) => {
           res.send();
