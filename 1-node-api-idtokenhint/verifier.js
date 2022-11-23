@@ -48,9 +48,9 @@ let participants = [];
 function requestTrace( req ) {
   var dateFormatted = new Date().toISOString().replace("T", " ");
   var h1 = '//****************************************************************************';
-  console.log( `${h1}\n${dateFormatted}: ${req.method} ${req.protocol}://${req.headers["host"]}${req.originalUrl}` );
-  console.log( `Headers:`)
-  console.log(req.headers);
+  // console.log( `${h1}\n${dateFormatted}: ${req.method} ${req.protocol}://${req.headers["host"]}${req.originalUrl}` );
+  // console.log( `Headers:`)
+  // console.log(req.headers);
 }
 /**
  * This method is called from the UI to initiate the presentation of the verifiable credential
@@ -83,7 +83,7 @@ mainApp.app.get('/api/verifier/presentation-request', async (req, res) => {
         });  
       return; 
   }
-  console.log( `accessToken: ${accessToken}` );
+  // console.log( `accessToken: ${accessToken}` );
   // modify the callback method to make it easier to debug 
   // with tools like ngrok since the URI changes all the time
   // this way you don't need to modify the callback URL in the payload every time
@@ -91,11 +91,11 @@ mainApp.app.get('/api/verifier/presentation-request', async (req, res) => {
   presentationConfig.callback.url = `https://${req.hostname}/api/verifier/presentation-request-callback`;
   presentationConfig.callback.state = id;
 
-  console.log( 'VC Client API Request' );
+  // console.log( 'VC Client API Request' );
   var client_api_request_endpoint = `${mainApp.config.msIdentityHostName}verifiableCredentials/createPresentationRequest`;
-  console.log( client_api_request_endpoint );
+  // console.log( client_api_request_endpoint );
   var payload = JSON.stringify(presentationConfig);
-  console.log( payload );
+  // console.log( payload );
   const fetchOptions = {
     method: 'POST',
     body: payload,
@@ -113,8 +113,8 @@ mainApp.app.get('/api/verifier/presentation-request', async (req, res) => {
   // it has scanned the QR code. If the payload requested the VC Request service to create the QR code that is returned as well
   // the javascript in the UI will use that QR code to display it on the screen to the user.            
   resp.id = id;                              // add id so browser can pull status
-  console.log( 'VC Client API Response' );
-  console.log( resp );  
+  // console.log( 'VC Client API Response' );
+  // console.log( resp );  
   res.status(200).json(resp);       
 })
 
@@ -128,7 +128,6 @@ mainApp.app.post('/api/verifier/presentation-request-callback', parser, async (r
   });
   req.on('end', function () {
     requestTrace( req );
-    console.log( body );
     if ( req.headers['api-key'] != apiKey ) {
       res.status(401).json({
         'error': 'api-key wrong or missing'
@@ -195,7 +194,7 @@ mainApp.app.get('/api/verifier/presentation-response', async (req, res) => {
   requestTrace( req );
   mainApp.sessionStore.get( id, (error, session) => {
     if (session && session.sessionData) {
-      console.log(`status: ${session.sessionData.status}, message: ${session.sessionData.message}`);
+      // console.log(`status: ${session.sessionData.status}, message: ${session.sessionData.message}`);
       if ( session.sessionData.status == "presentation_verified" ) {
         delete session.sessionData.presentationResponse; // browser don't need this
       }

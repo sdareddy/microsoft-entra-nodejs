@@ -47,9 +47,9 @@ if ( issuanceConfig.callback.headers ) {
 function requestTrace( req ) {
   var dateFormatted = new Date().toISOString().replace("T", " ");
   var h1 = '//****************************************************************************';
-  console.log( `${h1}\n${dateFormatted}: ${req.method} ${req.protocol}://${req.headers["host"]}${req.originalUrl}` );
-  console.log( `Headers:`)
-  console.log(req.headers);
+  // console.log( `${h1}\n${dateFormatted}: ${req.method} ${req.protocol}://${req.headers["host"]}${req.originalUrl}` );
+  // console.log( `Headers:`)
+  // console.log(req.headers);
 }
 
 function generatePin( digits ) {
@@ -106,12 +106,12 @@ mainApp.app.get('/api/issuer/issuance-request', async (req, res) => {
     issuanceConfig.pin.value = generatePin( issuanceConfig.pin.length );
   }
   // here you could change the payload manifest and change the firstname and lastname
-  /*if ( issuanceConfig.claims ) {
-    issuanceConfig.claims.vorname = "Megan";
-    issuanceConfig.claims.nachname = "Bowen";
-    issuanceConfig.claims.zugangsgruppe = "FZI";
-    issuanceConfig.claims.qualifikation = "Gute Mitarbeiterin";
-  }*/
+  issuanceConfig.claims.vorname = req.query.vorname;
+  issuanceConfig.claims.nachname = req.query.nachname;
+  issuanceConfig.claims.firma = req.query.firma;
+
+
+
 
   console.log( 'VC Client API Request' );
   var client_api_request_endpoint = `${mainApp.config.msIdentityHostName}verifiableCredentials/createIssuanceRequest`;

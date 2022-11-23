@@ -17,8 +17,19 @@
             <div style="text-align: center;">
                 <img src="VerifiedCredentialExpert-icon.png" height=200px; />
                 <h1>Verifiable Credential Expert Issuance</h1>
-        
-            <button type="button" id="sign-in" class="button">GET CREDENTIAL</button>
+                <div id="ausstellungsformular">
+                    <h1>Austellungsformular</h1>
+                    <form style="width:250px; margin: auto">
+                            <label class="formLabel" for="vorname">Vorname:</label>
+                            <input class="formInput" type="text" id="vorname" name="vorname">
+                            <label class="formLabel" for="nachname">Nachname:</label>
+                            <input class="formInput" id="nachname" name="nachname">
+                            <label class="formLabel" for="firma">Firma:</label>
+                            <input class="formInput" id="firma" name="firma">
+                    </form>
+                </div>
+            
+            <button type="button" id="sign-in" class="button">Register</button>
             <div id="qrText"  style="display:none;">
                 <p class="small-text">
                     <img src="authenticator-icon.png" alt="Authenticator icon" class="icon-small"><br>
@@ -44,7 +55,10 @@
                 var qrcode = new QRCode("qrcode", { width: 300, height: 300 });
                 var respIssuanceReq = null;
                 signIn.addEventListener('click', () => {
-                    fetch('/api/issuer/issuance-request')
+                    const vorname = document.getElementById("vorname").value
+                    const nachname = document.getElementById("nachname").value
+                    const firma = document.getElementById("firma").value
+                    fetch('/api/issuer/issuance-request?vorname=' + vorname + '&nachname=' + nachname + '&firma=' + firma)
                     .then(function(response) {
                         response.text()
                         .catch(error => displayMessage(error) )

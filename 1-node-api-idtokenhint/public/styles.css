@@ -88,3 +88,23 @@ body {
 #message {
   font-size: 1.5em;
 }
+
+.formField {
+  margin-bottom: 10px;
+}
+
+.formLabel {
+  display: inline-block;
+  width: 110px;
+  color: #777777;
+}
+.formInput {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
