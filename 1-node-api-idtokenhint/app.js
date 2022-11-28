@@ -92,7 +92,7 @@ fetch( `https://login.microsoftonline.com/${config.azTenantId}/v2.0/.well-known/
 // Main Express server function
 // Note: You'll want to update port values for your setup.
 const app = express()
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 80;
 
 var parser = bodyParser.urlencoded({ extended: false });
 
