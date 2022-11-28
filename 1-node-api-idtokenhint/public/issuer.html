@@ -1,141 +1,155 @@
 ﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved.
      Licensed under the MIT License. -->
-
-<html lang="en">
-
-    <head>
-        <meta charset="utf-8">
-        <title>Verifiable Credential Expert Request API Sample - Issuer</title>
-        <meta name="description" content="Verified Credentials Expert">
-        <meta name="author" content="Microsoft">
-        <link rel="stylesheet" href="styles.css">
-        <link rel="icon" href="favicon.png">    
-    </head>
-        
-    <body>
-        <div id="wrap">
-            <div style="text-align: center;">
-                <img src="VerifiedCredentialExpert-icon.png" height=200px; />
-                <h1>Verifiable Credential Expert Issuance</h1>
-                <div id="ausstellungsformular">
-                    <h1>Austellungsformular</h1>
-                    <form style="width:250px; margin: auto">
-                            <label class="formLabel" for="vorname">Vorname:</label>
-                            <input class="formInput" type="text" id="vorname" name="vorname">
-                            <label class="formLabel" for="nachname">Nachname:</label>
-                            <input class="formInput" id="nachname" name="nachname">
-                            <label class="formLabel" for="firma">Firma:</label>
-                            <input class="formInput" id="firma" name="firma">
-                    </form>
-                </div>
-            
-            <button type="button" id="sign-in" class="button">Register</button>
-            <div id="qrText"  style="display:none;">
-                <p class="small-text">
-                    <img src="authenticator-icon.png" alt="Authenticator icon" class="icon-small"><br>
-                    Scan with Microsoft Authenticator
-                </p>
-            </div>
-            <a id="deeplink" style="display: none;margin-top: 10px;">Tap to open Authenticator on mobile</a>
-            <div id="qrcode" style="text-align: center"></div>
-            <div id="pinCodeText" style="display: none"></div>
-
-            <div id="message-wrapper" class="margin-bottom-75 margin-top-75" style="display: none">
-               <i class="fas fa-user-check green icon-text-large margin-bottom-25"></i>
-               <div id="message"></div>
-               <br />
-               <div id="payload"></div>
-            </div>
-
-            <script src="qrcode.min.js"></script>
-            <script>
-                var signIn = document.getElementById('sign-in');
-                var signOut = document.getElementById('sign-out');
-                var display = document.getElementById('display');
-                var qrcode = new QRCode("qrcode", { width: 300, height: 300 });
-                var respIssuanceReq = null;
-                signIn.addEventListener('click', () => {
-                    const vorname = document.getElementById("vorname").value
-                    const nachname = document.getElementById("nachname").value
-                    const firma = document.getElementById("firma").value
-                    fetch('/api/issuer/issuance-request?vorname=' + vorname + '&nachname=' + nachname + '&firma=' + firma)
-                    .then(function(response) {
-                        response.text()
-                        .catch(error => displayMessage(error) )
-                        .then(function(message) {
-                            respIssuanceReq = JSON.parse(message);
-                            if( /Android/i.test(navigator.userAgent) ) {
-                                console.log(`Android device! Using deep link (${respIssuanceReq.url}).`);
-                                window.location.href = respIssuanceReq.url; setTimeout(function () {
-                                window.location.href = "https://play.google.com/store/apps/details?id=com.azure.authenticator"; }, 2000);
-                            } else if (/iPhone/i.test(navigator.userAgent)) {
-                                console.log(`iOS device! Using deep link (${respIssuanceReq.url}).`);
-                                window.location.replace(respIssuanceReq.url);
-                            } else {
-                                if ( response.status > 299 ) {
-                                    displayMessage( message );
-                                } else {
-                                    console.log(`Not Android or IOS. Generating QR code encoded with ${message}`);
-                                    qrcode.makeCode(respIssuanceReq.url);
-                                    document.getElementById('sign-in').style.display = "none";
-                                    document.getElementById('qrText').style.display = "block";
-                                    if (respIssuanceReq.pin) {
-                                        document.getElementById('pinCodeText').innerHTML = "Pin code: " + respIssuanceReq.pin;
-                                        document.getElementById('pinCodeText').style.display = "block";
-                                    }
-                                    checkIssuanceResponse();
-                                }
-                            }
-                        }).catch(error => { console.log(error.message); })
-                    }).catch(error => { console.log(error.message); })
-
-                    
-                });
-
-                function displayMessage(msg) {
-                    document.getElementById('message-wrapper').style.display = "block";
-                    document.getElementById("message").innerHTML = msg;
-                }
-
-                function checkIssuanceResponse() {
-                    var checkStatus = setInterval(function () {
-                        fetch('api/issuer/issuance-response?id=' + respIssuanceReq.id )
-                            .then(response => response.text())
-                            .catch(error => displayMessage( error ))
-                            .then(response => {
-                                if (response.length > 0) {
-                                    console.log(response)
-                                    respMsg = JSON.parse(response);
-                                    // QR Code scanned, show pincode if pincode is required
-                                    if (respMsg.status == 'request_retrieved') {
-                                        document.getElementById("qrcode").getElementsByTagName("img")[0].style.opacity = "0.1";
-                                        document.getElementById('qrText').style.display = "none";
-                                        if (respMsg.pin) {
-                                            document.getElementById('pinCodeText').style.display = "visible";
-                                        }
-                                        displayMessage( respMsg.message );
-                                        //document.getElementById('message-wrapper').style.display = "block";
-                                        //document.getElementById('message').innerHTML = respMsg.message;
-                                    }
-                                    if (respMsg.status == 'issuance_successful') {
-                                        document.getElementById('qrcode').style.display = "none";
-                                        document.getElementById('pinCodeText').style.display = "none";
-                                        document.getElementById('message').innerHTML = respMsg.message;
-                                        clearInterval(checkStatus);
-                                    }
-                                    if (respMsg.status == 'issuance_error') {
-                                        document.getElementById('qrcode').style.display = "none";
-                                        document.getElementById('pinCodeText').style.display = "none";
-                                        document.getElementById('message').innerHTML = "Issuance error occurred, did you enter the wrong pincode? Please refresh the page and try again.";
-                                        document.getElementById('payload').innerHTML = "Payload: " + respMsg.payload;
-                                        clearInterval(checkStatus);
-                                    }
-                                }
-                            })
-                    }, 2500);
-                }
-            </script>
-            </div>
-            </div>
-    </body>
-</html>
+     <!DOCTYPE html>
+ 
+     <html lang="en">
+     <head>
+         <meta charset="utf-8">
+         <title>Veranstaltungsticket ausstellen</title>
+         <meta name="description" content="Verifiable Credentials Expert">
+         <meta name="author" content="Microsoft">
+         <link rel="stylesheet" href="styles.css">
+         <link rel="icon" href="favicon.png">      
+     </head>
+     
+     <body>
+         <div id="wrap">
+             <div
+         style="display:block; flex-shrink:0; width:100%; min-height: 100%; transform:none; background: rgb(18,91,172); background: linear-gradient(180deg, rgba(18,91,172,1) 0%, rgba(59,59,217,1) 35%, rgba(6,182,218,1) 100%);">
+         <div style="display: flex; flex-direction: row; margin: 10px; min-height: 100%; flex:1;">
+             <div id="links" style="width: 20%;"></div>
+             <div id="linkercontent" style="width: 30%; display: flex; flex-direction: column;">
+                 <div style="margin-top: 5%;">
+                     <h2 style="font-family: Helvetica; color: white;"">Dein Veranstaltungsticket</h2></div>
+                     <div style=" margin-top: 30%; align-self: center;">
+                         <h1 style="font-family: Helvetica; color: white; font-weight: 1000;">Als welche
+                             <u>FIGUR</u><br />würdest gerne Du die Veranstaltung gehen?
+                         </h1>
+                         <p style="font-family: Helvetica; color: white; font-weight: 800;">Gebe deinen Wunschcharakter ein und checke am Event ein. Mit diesr Identität dieser Figur darfst du dann für den heutigen Abend unterwegs sein.
+                         <p>
+                     </div>
+                     <div style="text-align: center;" id="beforeQR">
+                         <form id="goodieForm">
+                             <label for="goodies" style="font-family: Helvetica; color: white; font-weight: 800;">Gib deinen
+                                 Vornamen ein </label>
+                                 <input type="text" name="vorname" id="vorname">
+                                 <br>
+                                 <label for="goodies" style="font-family: Helvetica; color: white; font-weight: 800;">Gib deinen Nachnamen ein </label>
+                                 <input type="text" name="nachname" id="nachname">
+                         </form>
+                         <button type="button" id="sign-in" class="button"
+                             style="box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+     
+                                 border-radius: 4px; font-size: 16; padding: 14px 40px; background-color: #ffffff; color: black; margin-top: 30px; margin-bottom: 30px; font-weight: 800; font-family: Helvetica;">Jetzt
+                             Ticket beantragen
+                         </button>
+                     </div>
+                     <div style="text-align: center;">
+                         <a id="deeplink" style="display: none; margin-top: 10px;">Tap to open Authenticator on mobile</a>
+                         <div id="qrcode" style="text-align: center; display: none"></div>
+                         <div id="pinCodeText" style="display: none; color: white;"></div>
+     
+                         <div id="message-wrapper" class="margin-bottom-75 margin-top-75" style="display: none; color: white;">
+                             <i class="fas fa-user-check green icon-text-large margin-bottom-25"></i>
+                             <div id="message" ></div>
+                             <br />
+                             <div id="payload"></div>
+                         </div>
+                     <div>
+                     <p style="font-family: Helvetica; color: white; font-weight: 600;">Alles
+                         was du brauchst ist die App "Microsoft Authenticator" aus dem DB App Store, Google Play oder Apple
+                         App Store!</p>
+                 </div>
+                 </div>
+             </div>
+             <div id="rechtercontent" style="width: 30%; margin-top: auto;">
+                 <img src="./images/smartphone_Issuer.png" style="width: 150%;"><img>
+             </div>
+             <div id="rechts" style="width: 20%;"></div>
+         </div>
+     </div>
+     
+     <script src="qrcode.min.js"></script>
+     <script>
+         var signIn = document.getElementById('sign-in');
+         var signOut = document.getElementById('sign-out');
+         var display = document.getElementById('display');
+         var qrcode = new QRCode("qrcode", { width: 300, height: 300 });
+         var respIssuanceReq = null;
+     
+         signIn.addEventListener('click', () => {
+             const vorname = document.getElementById("vorname").value
+             const nachname = document.getElementById("nachname").value
+             //document.getElementById('goodieForm').style.display = "none";
+              document.getElementById("beforeQR").style.display = "none";
+              document.getElementById("qrcode").style.display = "block";
+     
+             fetch('/api/issuer/issuance-request?vorname=' + vorname + '&nachname=' + nachname)
+                 .then(response => response.text())
+                 //.catch(error => { console.log(error.message); document.getElementById("errorMessage").innerHTML += error.message; })
+                 .then(function (message) {
+                     respIssuanceReq = JSON.parse(message);
+                     if (/Android/i.test(navigator.userAgent)) {
+                         console.log(`Android device! Using deep link (${respIssuanceReq.url}).`);
+                         window.location.href = respIssuanceReq.url; setTimeout(function () {
+                             window.location.href = "https://play.google.com/store/apps/details?id=com.azure.authenticator";
+                         }, 2000);
+                     } else if (/iPhone/i.test(navigator.userAgent)) {
+                         console.log(`iOS device! Using deep link (${respIssuanceReq.url}).`);
+                         window.location.replace(respIssuanceReq.url);
+                     } else {
+                         console.log(`Not Android or IOS. Generating QR code encoded with ${message}`);
+                         qrcode.makeCode(respIssuanceReq.url);
+                         document.getElementById('sign-in').style.display = "none";
+                         if (respIssuanceReq.pin) {
+                             document.getElementById('pinCodeText').innerHTML = "Pin code: " + respIssuanceReq.pin;
+                             document.getElementById('pinCodeText').style.display = "block";
+                         }
+     
+     
+                         var checkStatus = setInterval(function () {
+                             fetch('api/issuer/issuance-response?id=' + respIssuanceReq.id)
+                                 .then(response => response.text())
+                                 .catch(error => document.getElementById("message").innerHTML += error)
+                                 .then(response => {
+                                     if (response.length > 0) {
+                                         console.log(response)
+                                         respMsg = JSON.parse(response);
+                                         // QR Code scanned, show pincode if pincode is required
+                                         if (respMsg.status == 'request_retrieved') {
+                                             document.getElementById('message-wrapper').style.display = "block";
+                                             document.getElementById('qrcode').style.display = "none";
+     
+                                             if (respMsg.pin) {
+                                                 document.getElementById('pinCodeText').style.display = "visible";
+                                             }
+                                             document.getElementById('message').innerHTML = respMsg.message;
+                                         }
+                                         if (respMsg.status == 'issuance_successful') {
+                                             document.getElementById('pinCodeText').style.display = "none";
+                                             document.getElementById('message').innerHTML = respMsg.message;
+                                             clearInterval(checkStatus);
+                                         }
+                                         if (respMsg.status == 'issuance_error') {
+                                             document.getElementById('pinCodeText').style.display = "none";
+                                             document.getElementById('message').innerHTML = "Issuance error occured, did you enter the wrong pincode? Please refresh the page and try again.";
+                                             document.getElementById('payload').innerHTML = "Payload: " + respMsg.payload;
+                                             clearInterval(checkStatus);
+                                         }
+                                     }
+                                 })
+                         }, 1500); //change this to higher interval if you use ngrok to prevent overloading the free tier service
+     
+                     }
+                 }).catch(error => { console.log(error.message); document.getElementById("errorMessage").innerHTML += error.message; })
+         });                
+     </script>
+     </div>
+     
+         <footer>
+             <p class="text-center text-gray tiny-text margin-top-75"></BR>
+             </p>
+         </footer>
+         </div>
+     </body>
+     </html>

@@ -160,7 +160,6 @@ mainApp.app.post('/api/verifier/presentation-request-callback', parser, async (r
       mainApp.sessionStore.get(presentationResponse.state, (error, session) => {
         let firstName = presentationResponse.verifiedCredentialsData[0].claims.vorname
         let lastName = presentationResponse.verifiedCredentialsData[0].claims.nachname
-        let org = presentationResponse.verifiedCredentialsData[0].claims.firma
         var cacheData = {
             "status": presentationResponse.requestStatus,
             "message": "Presentation received",
@@ -168,11 +167,10 @@ mainApp.app.post('/api/verifier/presentation-request-callback', parser, async (r
             "subject": presentationResponse.subject,
             "firstName": firstName,
             "lastName": lastName,
-            "organisation": org,
             "presentationResponse": presentationResponse
         };
-        participants.push({firstName, lastName, org});
-        console.log({firstName, lastName, org});
+        participants.push({firstName, lastName});
+        console.log({firstName, lastName});
         console.table(participants);
         console.log(JSON.stringify(participants, null, 4));
         session.sessionData = cacheData;

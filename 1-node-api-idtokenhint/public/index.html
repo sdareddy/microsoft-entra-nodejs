@@ -1,37 +1,43 @@
-<!-- Copyright (c) Microsoft Corporation. All rights reserved.
-     Licensed under the MIT License. -->
-
-     <html>
-        <head>
-            <meta charset="utf-8">
-            <title>Verifiable Credential Expert Issuance and Verifier Sample</title>
-            <meta name="description" content="Verifiable Credentials Expert">
-            <meta name="author" content="Microsoft">
-            <link rel="stylesheet" href="styles.css">
-            <link rel="icon" href="favicon.png">
-          
-        </head>    
-        <body>
-            <div id="wrap">
-
-                <div style="text-align: center;">
-                    <img src="VerifiedCredentialExpert-icon.png" height=200px; />
-                    <h1>Verifiable Credential Expert Issuance and Verifier Sample</h1>
-            
-                    <button type="button" id="idIssue" class="button">GET CREDENTIAL</button>
-                    <button type="button" id="idVerify" class="button">VERIFY CREDENTIAL</button>
-                    <script>
-                            var idIssue = document.getElementById('idIssue');
-                            var idVerify = document.getElementById('idVerify');
-                            idIssue.addEventListener('click', () => {
-                                window.location = "issuer.html";
-                            })
-                            idVerify.addEventListener('click', () => {
-                                window.location = "verifier.html";
-                            })
-                        </script>
-                </div>
-
+<body>
+    <div id="wrap">
+       
+ 
+<div style="display:block; flex-shrink:0; width:100%; min-height: 100%; transform:none; background: rgb(18,91,172);
+background: linear-gradient(180deg, rgba(18,91,172,1) 0%, rgba(59,59,217,1) 35%, rgba(6,182,218,1) 100%);">
+    <div style="display: flex; flex-direction: row; margin: 10px; min-height: 100%; flex:1;">
+        <div id="links" style="width: 20%;"></div>
+        <div id="linkercontent" style="width: 30%; display: flex; flex-direction: column; ">
+            <div style="margin-top: 5%;"><h2 style="font-family: Helvetica; color: white;" "="">Dein Veranstaltungsticket</h2></div>
+            <div style="margin-top: 30%; align-self: center;">
+                <h1 style="font-family: Helvetica; color: white; font-weight: 1000;">Wer bist <u>DU</u><br>?</h1>
+                <p style="font-family: Helvetica; color: white; font-weight: 800;">Du wolltest schon immer mal in die Rolle von Peter Pan oder Frodo Beutlin schlüpfen? Hier kannst du dir eine Rolle aus Buch oder Film/Fernsehen aussuchen und eintragen. Mit der Identität dieser Figur darfst du dann für den heutigen Abend unterwegs sein.</p>
             </div>
-        </body>
-    </html>
+            <div style="text-align: center;">
+                <button type="button" id="idIssue" class="button" style="box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+                border-radius: 4px; font-size: 16; padding: 14px 40px; background-color: #ffffff; color: black; margin-top: 30px; margin-bottom: 30px; font-weight: 800; font-family: Helvetica;">Ticket austellen</button>
+            </div>
+            <div>
+                <p style="font-family: Helvetica; color: white; font-weight: 600;">Alles was du brauchst ist die App "Microsoft Authenticator" aus dem DB App Store, Google Play oder Apple App Store!</p>
+            </div>
+        </div>
+ 
+        <div id="rechtercontent" style="width: 30%; margin-top: auto;">
+            <img src="./images/smartphone_ID.png" style="width: 150%;"><img>
+        </div>
+        <div id="rechts" style="width: 20%;"></div>
+    </div>
+    <script>
+        var idIssue = document.getElementById('idIssue');
+        idIssue.addEventListener('click', () => {
+            window.location = "issuer.html";
+        })
+    </script>
+</div>
+    <footer>
+        <p class="text-center text-gray tiny-text margin-top-75"><br>
+        </p>
+    </footer>
+    </div>
+ </body>
+ 
+ 

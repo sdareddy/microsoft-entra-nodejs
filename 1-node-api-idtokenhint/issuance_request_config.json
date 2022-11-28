@@ -11,7 +11,7 @@
   "registration": {
     "clientName": "Verifiable Credential Expert Sample"
   },
-  "type": "VerifiedCredentialExpert",
+  "type": "Veranstaltungsticket",
   "manifest": "CREDENTIAL URL IN THIS SAMPLE WILL BE COPIED FROM CONFIG.JSON",
   "pin": {
     "value": "123456",
