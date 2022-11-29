@@ -45,7 +45,7 @@ var msalConfig = {
               console.log(message);
           },
           piiLoggingEnabled: false,
-          logLevel: msal.LogLevel.Verbose,
+          logLevel: msal.LogLevel.Error,
       }
   }
 };
