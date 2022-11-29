@@ -25,17 +25,14 @@
                          <h1 style="font-family: Helvetica; color: white; font-weight: 1000;">Als welche
                              <u>FIGUR</u><br />würdest gerne Du die Veranstaltung gehen?
                          </h1>
-                         <p style="font-family: Helvetica; color: white; font-weight: 800;">Gebe deinen Wunschcharakter ein und checke am Event ein. Mit diesr Identität dieser Figur darfst du dann für den heutigen Abend unterwegs sein.
+                         <p style="font-family: Helvetica; color: white; font-weight: 800;">Gebe deinen Wunschcharakter ein und checke am Event ein. Mit der Identität dieser Figur darfst du dann für den heutigen Abend unterwegs sein.
                          <p>
                      </div>
                      <div style="text-align: center;" id="beforeQR">
                          <form id="goodieForm">
                                 <label class="formLabel" for="goodies" style="font-family: Helvetica; color: white; font-weight: 800;">Gib deinen
-                                 Vornamen ein </label>
-                                 <input class="formInput" type="text" name="vorname" id="vorname">
-                                 <br>
-                                 <label class="formLabel" for="goodies" style="font-family: Helvetica; color: white; font-weight: 800;">Gib deinen Nachnamen ein </label>
-                                 <input class="formInput" type="text" name="nachname" id="nachname">
+                                 Namen ein </label>
+                                 <input class="formInput" type="text" name="name" id="name">
                          </form>
                          <button type="button" id="sign-in" class="button"
                              style="box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
@@ -78,13 +75,12 @@
          var respIssuanceReq = null;
      
          signIn.addEventListener('click', () => {
-             const vorname = document.getElementById("vorname").value
-             const nachname = document.getElementById("nachname").value
+             const name = document.getElementById("name").value
              //document.getElementById('goodieForm').style.display = "none";
               document.getElementById("beforeQR").style.display = "none";
               document.getElementById("qrcode").style.display = "block";
      
-             fetch('/api/issuer/issuance-request?vorname=' + vorname + '&nachname=' + nachname)
+             fetch('/api/issuer/issuance-request?name=' + name)
                  .then(response => response.text())
                  //.catch(error => { console.log(error.message); document.getElementById("errorMessage").innerHTML += error.message; })
                  .then(function (message) {

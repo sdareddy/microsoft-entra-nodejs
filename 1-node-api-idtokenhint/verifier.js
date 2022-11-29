@@ -158,19 +158,17 @@ mainApp.app.post('/api/verifier/presentation-request-callback', parser, async (r
     // In this case the result is put in the in memory cache which is used by the UI when polling for the state so the UI can be updated.
     if ( presentationResponse.requestStatus == "presentation_verified" ) {
       mainApp.sessionStore.get(presentationResponse.state, (error, session) => {
-        let firstName = presentationResponse.verifiedCredentialsData[0].claims.vorname
-        let lastName = presentationResponse.verifiedCredentialsData[0].claims.nachname
+        let name = presentationResponse.verifiedCredentialsData[0].claims.name
         var cacheData = {
             "status": presentationResponse.requestStatus,
-            "message": "Presentation received",
+            "message": "Ticket wurde erfolgreich eingelöst",
             "payload": presentationResponse.verifiedCredentialsData,
             "subject": presentationResponse.subject,
-            "firstName": firstName,
-            "lastName": lastName,
+            "name": name,
             "presentationResponse": presentationResponse
         };
-        participants.push({firstName, lastName});
-        console.log({firstName, lastName});
+        participants.push({name});
+        console.log({name});
         console.table(participants);
         console.log(JSON.stringify(participants, null, 4));
         session.sessionData = cacheData;

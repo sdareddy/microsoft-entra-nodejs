@@ -106,8 +106,7 @@ mainApp.app.get('/api/issuer/issuance-request', async (req, res) => {
     issuanceConfig.pin.value = generatePin( issuanceConfig.pin.length );
   }
   // here you could change the payload manifest and change the firstname and lastname
-  issuanceConfig.claims.vorname = req.query.vorname;
-  issuanceConfig.claims.nachname = req.query.nachname;
+  issuanceConfig.claims.name = req.query.name;
 
   console.log( 'VC Client API Request' );
   var client_api_request_endpoint = `${mainApp.config.msIdentityHostName}verifiableCredentials/createIssuanceRequest`;
@@ -182,7 +181,7 @@ mainApp.app.post('/api/issuer/issuance-request-callback', parser, async (req, re
     }
 
     if ( issuanceResponse.requestStatus == "issuance_successful" ) {
-      message = "Credential successfully issued";
+      message = "Ticket erfolgreich ausgestellt";
       mainApp.sessionStore.get(issuanceResponse.state, (error, session) => {
         var sessionData = {
           "status" : "issuance_successful",

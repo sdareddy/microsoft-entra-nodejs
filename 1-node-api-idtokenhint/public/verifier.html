@@ -1,40 +1,57 @@
 <!-- Copyright (c) Microsoft Corporation. All rights reserved.
      Licensed under the MIT License. -->
-
-<html>
-    <head>
-        <meta charset="utf-8">
-        <title>Verifiable Credential Expert Request API Sample - Verifier</title>
-        <meta name="description" content="Verified Credentials Expert">
-        <meta name="author" content="Microsoft">
-        <link rel="stylesheet" href="styles.css">
-        <link rel="icon" href="favicon.png">
-        
-    </head>    
-    <body>
-        <div id="wrap">
-            <div style="text-align: center;">
-                <img src="VerifiedCredentialExpert-icon.png" height=200px; />
-                <h1>Verifiable Credential Expert Verification</h1>
-        
-            <button type="button" id="sign-in" class="button">VERIFY CREDENTIAL</button>
-            <div id="qrText"  style="display:none;">
-                <p class="small-text">
-                    <img src="authenticator-icon.png" alt="Authenticator icon" class="icon-small"><br>
-                    Scan with Microsoft Authenticator
-                </p>
-            </div>
-            <a id="deeplink" style="display: none;margin-top: 10px;">Tap to open Authenticator on mobile</a>
-            <div id="qrcode" style="text-align: center"></div>
-
-            <div id="message-wrapper" class="margin-bottom-75 margin-top-75" style="display: none">
-               <i class="fas fa-user-check green icon-text-large margin-bottom-25"></i>
-               <div id="message"></div>
-                <br />
-               <div id="subject"></div>
-                <br />
-               <div id="payload"></div>
-            </div>
+     <!DOCTYPE html>
+ 
+     <html lang="en">
+     <head>
+         <meta charset="utf-8">
+         <title>Veranstaltungsticket ausstellen</title>
+         <meta name="description" content="Verifiable Credentials Expert">
+         <meta name="author" content="Microsoft">
+         <link rel="stylesheet" href="styles.css">
+         <link rel="icon" href="favicon.png">      
+     </head>
+     
+     <body>
+         <div id="wrap">
+             <div
+         style="display:block; flex-shrink:0; width:100%; min-height: 100%; transform:none; background: rgb(18,91,172); background: linear-gradient(180deg, rgba(18,91,172,1) 0%, rgba(59,59,217,1) 35%, rgba(6,182,218,1) 100%);">
+         <div style="display: flex; flex-direction: row; margin: 10px; min-height: 100%; flex:1;">
+             <div id="links" style="width: 20%;"></div>
+             <div id="linkercontent" style="width: 30%; display: flex; flex-direction: column;">
+                 <div style="margin-top: 5%;">
+                     <h2 style="font-family: Helvetica; color: white;">Dein Veranstaltungsticket</h2></div>
+                     <div style=" margin-top: 30%; align-self: center;">
+                         <h1 style="font-family: Helvetica; color: white; font-weight: 1000;">Als welche
+                             <u>FIGUR</u><br />würdest gerne Du die Veranstaltung gehen?
+                         </h1>
+                         <p style="font-family: Helvetica; color: white; font-weight: 800;">Scanne den Code um dein Ticket einzulösen.
+                         <p>
+                     </div>
+                     <div style="text-align: center;">
+                         <a id="deeplink" style="margin-top: 10px; display:none">Tap to open Authenticator on mobile</a>
+                         <div id="qrcode" style="text-align: center; "></div>
+                         <div id="pinCodeText" style="color: white;"></div>
+     
+                         <div id="message-wrapper" class="margin-bottom-75 margin-top-75" style="display: none; color: white;">
+                             <i class="fas fa-user-check green icon-text-large margin-bottom-25"></i>
+                             <div id="message" ></div>
+                             <br />
+                             <div id="subject"></div>
+                         </div>
+                     <div>
+                     <p style="font-family: Helvetica; color: white; font-weight: 600;">Alles
+                         was du brauchst ist die App "Microsoft Authenticator" aus dem Google Play oder Apple
+                         App Store!</p>
+                 </div>
+                 </div>
+             </div>
+             <div id="rechtercontent" style="width: 30%; margin-top: auto;">
+                 <img src="./images/smartphone_Issuer.png" style="width: 150%;"><img>
+             </div>
+             <div id="rechts" style="width: 20%;"></div>
+         </div>
+     </div>
 
             <script src="qrcode.min.js"></script>
             <script>
@@ -43,7 +60,7 @@
                 var display = document.getElementById('display');
                 var qrcode = new QRCode("qrcode", { width: 300, height: 300 });
                 var respPresentationReq = null;
-                signIn.addEventListener('click', () => {
+                window.onload = () => {
                     fetch('/api/verifier/presentation-request')
                     .then(function(response) {
                         response.text()
@@ -82,10 +99,12 @@
                                     }
                                     
                                     if (respMsg.status == 'presentation_verified') {
+                                        document.getElementById('message-wrapper').style.display = "block";
+
                                         document.getElementById('qrcode').style.display = "none";
                                         document.getElementById('message').innerHTML = respMsg.message;
-                                        document.getElementById('payload').innerHTML = "Payload: " + JSON.stringify(respMsg.payload);
-                                        document.getElementById('subject').innerHTML = respMsg.firstName +" " + respMsg.lastName +" is a Verifiable Credential Expert";
+                                        // document.getElementById('payload').innerHTML = "Payload: " + JSON.stringify(respMsg.payload);
+                                        document.getElementById('subject').innerHTML = "Viel Spaß " + respMsg.name;
                                         clearInterval(checkStatus);
                                     }
                                     if (respMsg.status == 'issuance_failed') {
@@ -97,7 +116,7 @@
                                 }
                             })
                     }, 1500); //change this to higher interval if you use ngrok to prevent overloading the free tier service
-                })
+                }
             </script>
             </div>
 
