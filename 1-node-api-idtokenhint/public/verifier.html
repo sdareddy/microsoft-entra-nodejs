@@ -25,13 +25,20 @@
                          <h1 style="font-family: Helvetica; color: white; font-weight: 1000;">Als welche
                              <u>FIGUR</u><br />würdest gerne Du die Veranstaltung gehen?
                          </h1>
-                         <p style="font-family: Helvetica; color: white; font-weight: 800;">Scanne den Code um dein Ticket einzulösen.
-                         <p>
+<!--                         <p style="font-family: Helvetica; color: white; font-weight: 800;">Scanne den Code um dein Ticket einzulösen.<p>-->
                      </div>
                      <div style="text-align: center;">
-                         <a id="deeplink" style="margin-top: 10px; display:none">Tap to open Authenticator on mobile</a>
-                         <div id="qrcode" style="text-align: center; "></div>
-                         <div id="pinCodeText" style="color: white;"></div>
+<!--                         <a id="deeplink" style="margin-top: 10px; display:none">Tap to open Authenticator on mobile</a>-->
+<!--                         <div id="qrcode" style="text-align: center; "></div>-->
+                         <div>
+                             <ul style="color: white; text-align: left">
+                                 <li style="margin: 10px;">Öffne die Microsoft Authenticator App, die du bereits genutzt hast, um dein Veranstaltungsticket zu bekommen.</li>
+                                 <li>Klicke auf den Reiter „Überprüfe Ids“ in der Navigation (letzter Tab).</li>
+                                 <li>Klicke nun auf das kleine QR-Code-Icon unten Rechts in der App.</li>
+                                 <li>Scanne den QR Code.</li>
+                                 <li>Fertig.</li>
+                             </ul>
+                         </div>
      
                          <div id="message-wrapper" class="margin-bottom-75 margin-top-75" style="display: none; color: white;">
                              <i class="fas fa-user-check green icon-text-large margin-bottom-25"></i>
@@ -40,14 +47,16 @@
                              <div id="subject"></div>
                          </div>
                      <div>
-                     <p style="font-family: Helvetica; color: white; font-weight: 600;">Alles
-                         was du brauchst ist die App "Microsoft Authenticator" aus dem Google Play oder Apple
-                         App Store!</p>
+<!--                     <p style="font-family: Helvetica; color: white; font-weight: 600;">Alles-->
+<!--                         was du brauchst ist die App "Microsoft Authenticator" aus dem Google Play oder Apple-->
+<!--                         App Store!</p>-->
                  </div>
                  </div>
              </div>
              <div id="rechtercontent" style="width: 30%; margin-top: auto;">
-                 <img src="./images/smartphone_Issuer.png" style="width: 150%;"><img>
+<!--                 <img src="./images/smartphone_Issuer.png" style="width: 150%;"><img>-->
+                 <p style="font-family: Helvetica; color: white; font-weight: 800; text-align: center;">Scanne den Code um dein Ticket einzulösen.<p>
+                 <div id="qrcode" style="text-align: center; margin-bottom: 50px; "></div>
              </div>
              <div id="rechts" style="width: 20%;"></div>
          </div>
@@ -61,27 +70,34 @@
                 var qrcode = new QRCode("qrcode", { width: 300, height: 300 });
                 var respPresentationReq = null;
                 window.onload = () => {
+                     loadQr();
+                }
+
+                setInterval(()=> {loadQr()}, 180000);
+
+                loadQr = () => {
+                    //change this to higher interval if you use ngrok to prevent overloading the free tier service
                     fetch('/api/verifier/presentation-request')
-                    .then(function(response) {
-                        response.text()
-                        .catch(error => document.getElementById("message").innerHTML = error)
-                        .then(function(message) {
-                            respPresentationReq = JSON.parse(message);
-                            if( /Android/i.test(navigator.userAgent) ) {
-                                console.log(`Android device! Using deep link (${respPresentationReq.url}).`);
-                                window.location.href = respPresentationReq.url; setTimeout(function () {
-                                window.location.href = "https://play.google.com/store/apps/details?id=com.azure.authenticator"; }, 2000);
-                            } else if (/iPhone/i.test(navigator.userAgent)) {
-                                console.log(`iOS device! Using deep link (${respPresentationReq.url}).`);
-                                window.location.replace(respPresentationReq.url);
-                            } else {
-                                console.log(`Not Android or IOS. Generating QR code encoded with ${message}`);
-                                qrcode.makeCode(respPresentationReq.url);
-                                document.getElementById('sign-in').style.visibility = "hidden";
-                                document.getElementById('qrText').style.display = "block";
-                            }
+                        .then(function(response) {
+                            response.text()
+                                .catch(error => document.getElementById("message").innerHTML = error)
+                                .then(function(message) {
+                                    respPresentationReq = JSON.parse(message);
+                                    if( /Android/i.test(navigator.userAgent) ) {
+                                        console.log(`Android device! Using deep link (${respPresentationReq.url}).`);
+                                        window.location.href = respPresentationReq.url; setTimeout(function () {
+                                            window.location.href = "https://play.google.com/store/apps/details?id=com.azure.authenticator"; }, 2000);
+                                    } else if (/iPhone/i.test(navigator.userAgent)) {
+                                        console.log(`iOS device! Using deep link (${respPresentationReq.url}).`);
+                                        window.location.replace(respPresentationReq.url);
+                                    } else {
+                                        console.log(`Not Android or IOS. Generating QR code encoded with ${message}`);
+                                        qrcode.makeCode(respPresentationReq.url);
+                                        document.getElementById('sign-in').style.visibility = "hidden";
+                                        document.getElementById('qrText').style.display = "block";
+                                    }
+                                }).catch(error => { console.log(error.message); })
                         }).catch(error => { console.log(error.message); })
-                    }).catch(error => { console.log(error.message); })
                     var checkStatus = setInterval(function () {
                         fetch('api/verifier/presentation-response?id=' + respPresentationReq.id )
                             .then(response => response.text())
@@ -91,31 +107,31 @@
                                     console.log(response)
                                     respMsg = JSON.parse(response);
                                     // QR Code scanned
-                                    if (respMsg.status == 'request_retrieved') {
-                                        document.getElementById('message-wrapper').style.display = "block";
-                                        document.getElementById("qrcode").getElementsByTagName("img")[0].style.opacity = "0.1";
-                                        document.getElementById('qrText').style.display = "none";
-                                        document.getElementById('message').innerHTML = respMsg.message;
-                                    }
-                                    
-                                    if (respMsg.status == 'presentation_verified') {
-                                        document.getElementById('message-wrapper').style.display = "block";
+                                    // if (respMsg.status == 'request_retrieved') {
+                                    //     document.getElementById('message-wrapper').style.display = "block";
+                                    //     document.getElementById("qrcode").getElementsByTagName("img")[0].style.opacity = "0.1";
+                                    //     document.getElementById('qrText').style.display = "none";
+                                    //     document.getElementById('message').innerHTML = respMsg.message;
+                                    // }
 
-                                        document.getElementById('qrcode').style.display = "none";
-                                        document.getElementById('message').innerHTML = respMsg.message;
-                                        // document.getElementById('payload').innerHTML = "Payload: " + JSON.stringify(respMsg.payload);
-                                        document.getElementById('subject').innerHTML = "Viel Spaß " + respMsg.name;
+                                    if (respMsg.status == 'presentation_verified') {
+                                        // document.getElementById('message-wrapper').style.display = "block";
+                                        //
+                                        // document.getElementById('qrcode').style.display = "none";
+                                        // document.getElementById('message').innerHTML = respMsg.message;
+                                        // // document.getElementById('payload').innerHTML = "Payload: " + JSON.stringify(respMsg.payload);
+                                        // document.getElementById('subject').innerHTML = "Viel Spaß " + respMsg.name;
                                         clearInterval(checkStatus);
                                     }
                                     if (respMsg.status == 'issuance_failed') {
-                                        document.getElementById('qrcode').style.display = "none";
-                                        document.getElementById('message').innerHTML = "Verification error occurred.";
-                                        document.getElementById('payload').innerHTML = "Payload: " + respMsg.payload;
+                                        // document.getElementById('qrcode').style.display = "none";
+                                        // document.getElementById('message').innerHTML = "Verification error occurred.";
+                                        // document.getElementById('payload').innerHTML = "Payload: " + respMsg.payload;
                                         clearInterval(checkStatus);
                                     }
                                 }
                             })
-                    }, 1500); //change this to higher interval if you use ngrok to prevent overloading the free tier service
+                    }, 1500);
                 }
             </script>
             </div>
