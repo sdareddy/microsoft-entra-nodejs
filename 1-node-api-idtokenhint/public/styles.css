@@ -94,11 +94,12 @@ body {
 
 .formLabel {
   display: inline-block;
-  width: 110px;
+  width: 100%;
   color: #777777;
+  margin-top: 16px
 }
 .formInput {
-  width: 100%;
+  width: 75%;
   padding: 12px 20px;
   margin: 8px 0;
   display: inline-block;
