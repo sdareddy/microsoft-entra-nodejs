@@ -85,13 +85,13 @@ mainApp.app.get('/api/issuer/issuance-request', async (req, res) => {
       accessToken = result.accessToken;
     }
   } catch {
-    console.log( "failed to get access token" );
+    // console.log( "failed to get access token" );
     res.status(401).json({
         'error': 'Could not acquire credentials to access your Azure Key Vault'
         });  
       return; 
   }
-  console.log( `accessToken: ${accessToken}` );
+  // console.log( `accessToken: ${accessToken}` );
 
   // modify the callback method to make it easier to debug 
   // with tools like ngrok since the URI changes all the time
@@ -108,10 +108,10 @@ mainApp.app.get('/api/issuer/issuance-request', async (req, res) => {
   // here you could change the payload manifest and change the firstname and lastname
   issuanceConfig.claims.name = req.query.name;
 
-  console.log( 'VC Client API Request' );
+  // console.log( 'VC Client API Request' );
   var client_api_request_endpoint = `${mainApp.config.msIdentityHostName}verifiableCredentials/createIssuanceRequest`;
-  console.log( client_api_request_endpoint );
-  console.log( issuanceConfig );
+  // console.log( client_api_request_endpoint );
+  // console.log( issuanceConfig );
 
   var payload = JSON.stringify(issuanceConfig);
   const fetchOptions = {
@@ -133,9 +133,9 @@ mainApp.app.get('/api/issuer/issuance-request', async (req, res) => {
   if ( issuanceConfig.pin ) {
     resp.pin = issuanceConfig.pin.value;   // add pin code so browser can display it
   }
-  console.log( 'VC Client API Response' );
-  console.log( response.status );
-  console.log( resp );  
+  // console.log( 'VC Client API Response' );
+  // console.log( response.status );
+  // console.log( resp );  
   if ( response.status > 299 ) {
     res.status(400).json( resp.error );  
 } else {
@@ -152,7 +152,7 @@ mainApp.app.post('/api/issuer/issuance-request-callback', parser, async (req, re
   });
   req.on('end', function () {
     requestTrace( req );
-    console.log( body );
+    // console.log( body );
     if ( req.headers['api-key'] != apiKey ) {
       res.status(401).json({
         'error': 'api-key wrong or missing'
@@ -222,7 +222,7 @@ mainApp.app.get('/api/issuer/issuance-response', async (req, res) => {
   requestTrace( req );
   mainApp.sessionStore.get( id, (error, session) => {
     if (session && session.sessionData) {
-      console.log(`status: ${session.sessionData.status}, message: ${session.sessionData.message}`);
+      // console.log(`status: ${session.sessionData.status}, message: ${session.sessionData.message}`);
       res.status(200).json(session.sessionData);   
       }
   })
