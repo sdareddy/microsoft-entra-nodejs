@@ -113,8 +113,8 @@ mainApp.app.get('/api/verifier/presentation-request', async (req, res) => {
   // it has scanned the QR code. If the payload requested the VC Request service to create the QR code that is returned as well
   // the javascript in the UI will use that QR code to display it on the screen to the user.            
   resp.id = id;                              // add id so browser can pull status
-  console.log( 'VC Client API Response' );
-  console.log( resp );
+  // console.log( 'VC Client API Response' );
+  // console.log( resp );
   res.status(200).json(resp);       
 })
 
@@ -190,7 +190,7 @@ mainApp.app.get('/api/verifier/presentation-response', async (req, res) => {
   requestTrace( req );
   mainApp.sessionStore.get( id, (error, session) => {
     if (session && session.sessionData) {
-      console.log(`status: ${session.sessionData.status}, message: ${session.sessionData.message}`);
+      // console.log(`status: ${session.sessionData.status}, message: ${session.sessionData.message}`);
       if ( session.sessionData.status == "presentation_verified" ) {
         delete session.sessionData.presentationResponse; // browser don't need this
       }
