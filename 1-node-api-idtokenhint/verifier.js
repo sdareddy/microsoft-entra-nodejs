@@ -170,7 +170,7 @@ mainApp.app.post('/api/verifier/presentation-request-callback', parser, async (r
         participants.push({name});
         console.log(`Verified at: ${new Date().toGMTString()}`);
         console.log({name});
-        // console.table(participants);
+        console.table(participants);
         console.log(JSON.stringify(participants, null, 4));
         console.log('-----------------END VERIFICATION-------------------');
         session.sessionData = cacheData;
