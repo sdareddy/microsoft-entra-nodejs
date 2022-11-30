@@ -88,7 +88,7 @@ mainApp.app.get('/api/verifier/presentation-request', async (req, res) => {
   // with tools like ngrok since the URI changes all the time
   // this way you don't need to modify the callback URL in the payload every time
   // ngrok changes the URI
-  presentationConfig.callback.url = `https://${req.hostname}/api/verifier/presentation-request-callback`;
+  presentationConfig.callback.url = `http://${req.hostname}/api/verifier/presentation-request-callback`;
   presentationConfig.callback.state = id;
 
   // console.log( 'VC Client API Request' );
