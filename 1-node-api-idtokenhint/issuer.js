@@ -97,7 +97,7 @@ mainApp.app.get('/api/issuer/issuance-request', async (req, res) => {
   // with tools like ngrok since the URI changes all the time
   // this way you don't need to modify the callback URL in the payload every time
   // ngrok changes the URI
-  issuanceConfig.callback.url = `https://${req.hostname}/api/issuer/issuance-request-callback`;
+  issuanceConfig.callback.url = `http://${req.hostname}/api/issuer/issuance-request-callback`;
   // modify payload with new state, the state is used to be able to update the UI when callbacks are received from the VC Service
   issuanceConfig.callback.state = id;
   // check if pin is required, if found make sure we set a new random pin
