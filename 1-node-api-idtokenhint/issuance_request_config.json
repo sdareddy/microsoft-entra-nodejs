@@ -13,6 +13,10 @@
   },
   "type": "Veranstaltungsticket",
   "manifest": "CREDENTIAL URL IN THIS SAMPLE WILL BE COPIED FROM CONFIG.JSON",
+  "pin": {
+    "value": "123456",
+    "length": 4
+  },
   "claims": {
     "given_name": "FIRSTNAME",
     "family_name": "LASTNAME"
